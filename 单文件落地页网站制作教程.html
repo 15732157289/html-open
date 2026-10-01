@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>单文件落地页网站制作教程 — 从零复刻一个 GitHub Pages 产品页</title>
+<meta name="description" content="以 qyhhhh.github.io/BleRemoteBrideg 为例，完整拆解单文件 HTML 落地页的构建过程，并给出可直接套用的完整教程、代码片段与最佳实践。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232f5fc4'/%3E%3Cpath d='M8 20V9l11 5.5V9l8 6-8 6v-5.5z' fill='none' stroke='white' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f6f7fa; --paper:#ffffff; --ink:#1b2436; --mut:#5c6b80; --line:#e3e8f0;
+  --accent:#2f5fc4; --accent-ink:#24489a; --soft:#eef3fc; --code-bg:#0f1626; --code-ink:#dbe4f2;
+  --warn:#9a6a15; --ok:#2e7d54;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:76px;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+h1,h2,h3,h4,p,ul,ol,figure,pre{margin:0}
+h1,h2,h3{line-height:1.3;letter-spacing:-.3px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+code{font-family:ui-monospace,SFMono-Regular,Consolas,"Cascadia Mono",monospace;font-size:.92em}
+:not(pre)>code{background:#eef1f6;border:1px solid #e2e7ef;border-radius:4px;padding:1px 5px;color:#24448a}
+kbd{font-family:ui-monospace,Consolas,monospace;font-size:.9em;background:var(--paper);border:1px solid #cfd6e2;border-bottom-width:2px;border-radius:4px;padding:1px 6px}
+button:focus-visible,a:focus-visible,summary:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+::selection{background:#cfe0ff}
+.skip{position:fixed;top:-80px;left:12px;background:var(--accent);color:#fff;padding:9px 18px;border-radius:6px;z-index:100}
+.skip:focus{top:12px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 28px}
+.read{max-width:760px}
+/* nav */
+.nav{position:sticky;top:0;z-index:30;background:#fffffff2;backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav-in{height:64px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;color:var(--ink);white-space:nowrap;padding:10px 0}
+.brand:hover{color:var(--ink);text-decoration:none}
+.brand-mark{width:26px;height:26px;border-radius:7px;background:var(--accent);display:grid;place-items:center;flex:none}
+.brand-mark svg{width:15px;height:15px}
+.nav-links{display:flex;gap:20px;align-items:center}
+.nav-links a{font-size:13px;color:var(--mut);font-weight:550;white-space:nowrap}
+.nav-links a:hover{color:var(--accent)}
+.nav-links .cta{color:#fff;background:var(--accent);padding:7px 13px;border-radius:7px}
+.nav-links .cta:hover{color:#fff;text-decoration:none}
+/* hero */
+.hero{background:linear-gradient(150deg,#ffffff 0%,#eef3fc 62%,#f6f7fa 100%);border-bottom:1px solid #e2e9f4}
+.hero-in{display:grid;grid-template-columns:1.15fr .85fr;gap:36px;align-items:center;padding-block:46px 40px}
+.hero h1{font-size:clamp(30px,3.6vw,44px);font-weight:800;letter-spacing:-1.4px;line-height:1.2;margin-bottom:14px}
+.hero h1 .accent{color:var(--accent)}
+.lede{color:var(--mut);font-size:16px;line-height:1.85;margin-bottom:22px;max-width:520px}
+.hero-meta{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:12.5px;color:var(--mut);margin-bottom:26px}
+.hero-meta b{color:var(--ink)}
+.demo-card{background:var(--paper);border:1px solid #d6e0ef;border-radius:14px;box-shadow:0 16px 40px -26px #1e3a6b44;overflow:hidden}
+.demo-card .dc-head{display:flex;align-items:center;gap:6px;padding:10px 14px;background:#f3f6fb;border-bottom:1px solid #e2e8f2;font:12px ui-monospace,Consolas,monospace;color:var(--mut)}
+.demo-card .dc-dot{width:9px;height:9px;border-radius:50%;background:#cdd6e4}
+.demo-card .dc-url{flex:1;text-align:center}
+.demo-card .dc-body{height:150px;position:relative;background:linear-gradient(140deg,#203153,#13213a);overflow:hidden}
+.demo-card .dc-body .screen{margin:16px 20px;border:1px solid #35507a;border-radius:10px;background:#0c1729;height:112px;position:relative;overflow:hidden}
+.demo-card .dc-body .screen::before{content:"";position:absolute;top:0;left:0;right:0;height:22px;background:#13213a;border-bottom:1px solid #223a5e}
+.demo-card .dc-tabs{position:absolute;left:20px;right:20px;bottom:14px;display:flex;gap:6px}
+.demo-card .dc-tab{flex:1;height:20px;border:1px solid #35507a;border-radius:6px;background:#17304f;animation:dcp 2.6s ease-in-out infinite}
+.demo-card .dc-tab:nth-child(2){animation-delay:.5s}.demo-card .dc-tab:nth-child(3){animation-delay:1s}
+@keyframes dcp{0%,100%{background:#17304f;border-color:#35507a}45%{background:#2f5fc4;border-color:#6a8ad4}}
+/* layout */
+main{padding:54px 0 10px}
+section{padding:34px 0;border-bottom:1px solid var(--line)}
+section:last-of-type{border-bottom:0}
+.sec-num{font:600 11px/1.5 ui-monospace,Consolas,monospace;letter-spacing:1.6px;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+h2{font-size:27px;font-weight:780;margin-bottom:10px}
+.sec-sub{color:var(--mut);font-size:14px;line-height:1.8;margin-bottom:20px;max-width:680px}
+h3{font-size:18px;font-weight:700;margin:26px 0 10px}
+h4{font-size:15px;font-weight:680;margin:20px 0 8px}
+p{margin:10px 0;color:#2a3446}
+ul,ol{margin:10px 0 10px 0;padding-left:22px;color:#2a3446}
+li{margin:5px 0}
+.pill{display:inline-flex;align-items:center;gap:6px;background:var(--soft);color:var(--accent-ink);border:1px solid #d3e0f7;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:600}
+/* code */
+pre{background:var(--code-bg);color:var(--code-ink);border-radius:10px;padding:16px 18px;overflow-x:auto;font-size:13px;line-height:1.65;margin:12px 0;box-shadow:0 6px 18px -14px #0f1626aa}
+pre code{background:none;border:0;color:inherit;font-size:inherit}
+.code-cap{font:11px ui-monospace,Consolas,monospace;color:var(--mut);margin:14px 0 6px}
+/* cards & callouts */
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:14px 0}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:11px;padding:16px 17px}
+.card h4{margin:0 0 6px;font-size:14.5px}
+.card p{margin:0;font-size:14px;color:var(--mut);line-height:1.7}
+.note{border-left:3px solid var(--accent);background:var(--soft);padding:12px 15px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px}
+.note.warn{border-color:var(--warn);background:#fdf6e9}
+.note.ok{border-color:var(--ok);background:#eef8f2}
+.note b{color:var(--ink)}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px;table-layout:fixed}
+caption{caption-side:top;text-align:left;font:11px ui-monospace,Consolas,monospace;color:var(--mut);margin-bottom:6px}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+thead th{background:#f1f4fa;font-weight:650;color:#31405a}
+tbody tr:nth-child(even){background:#fafbfd}
+td .mono,th .mono{font-family:ui-monospace,Consolas,monospace;font-size:.92em}
+/* diagram */
+.diagram{border:1px solid var(--line);border-radius:12px;background:var(--paper);padding:20px;margin:14px 0;overflow-x:auto}
+.diagram svg{display:block;width:100%;height:auto;max-width:720px;margin:0 auto}
+/* steps */
+.step{display:flex;gap:14px;margin:16px 0}
+.step-n{flex:none;width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px}
+.step-b{min-width:0}
+.step-b h3{margin:2px 0 8px}
+.step-b h3 .step-tag{font:11px ui-monospace,Consolas,monospace;color:var(--mut);font-weight:500;margin-left:8px}
+/* footer */
+footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--mut);font-size:12.5px}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+/* misc */
+.toc{background:var(--paper);border:1px solid var(--line);border-radius:11px;padding:16px 18px;margin:14px 0}
+.toc ol{margin:6px 0 0;padding-left:20px}
+.toc a{color:var(--accent-ink)}
+.toc a:hover{color:var(--accent)}
+.checklist{list-style:none;padding-left:0}
+.checklist li{padding-left:26px;position:relative}
+.checklist li::before{content:"";position:absolute;left:2px;top:.42em;width:13px;height:13px;border:2px solid var(--ok);border-radius:3px}
+.arrow{color:var(--accent);font-weight:700}
+@media (max-width:860px){
+  .hero-in{grid-template-columns:1fr}
+  .cards{grid-template-columns:1fr}
+  .nav-links{display:none}
+  .read{max-width:100%}
+  main{padding-top:34px}
+  body{font-size:15.5px}
+  table{font-size:14px}
+  .hero-meta{font-size:13.5px}
+}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  .demo-card .dc-tab{animation:none}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">跳到正文</a>
+
+<header class="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="#top" aria-label="回到顶部">
+      <span class="brand-mark"><svg viewBox="0 0 24 24"><path d="M6 15V7l8 4V7l6 4.5L14 16v-4z" fill="none" stroke="white" stroke-width="2" stroke-linejoin="round"/></svg></span>
+      单文件落地页 · 制作教程
+    </a>
+    <nav class="nav-links" aria-label="章节导航">
+      <a href="#part1">网站解剖</a>
+      <a href="#part2">复刻教程</a>
+      <a href="#part3">最佳实践</a>
+      <a class="cta" href="#part2">开始制作</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero" id="top">
+  <div class="wrap hero-in">
+    <div>
+      <span class="pill">教程 · 零基础可上手</span>
+      <h1>把一个产品页做进<span class="accent">一个 HTML 文件</span></h1>
+      <p class="lede">以 <b>qyhhhh.github.io/BleRemoteBrideg</b> 为蓝本，完整拆解一个「单文件、零框架、免费托管、带交互演示」的产品落地页是怎么做出来的，并给你一套可直接套用的步骤与代码。</p>
+      <div class="hero-meta">
+        <span>托管：<b>GitHub Pages</b></span>
+        <span>技术：<b>原生 HTML/CSS/JS</b></span>
+        <span>形态：<b>单文件</b></span>
+        <span>成本：<b>¥0</b></span>
+      </div>
+    </div>
+    <div class="demo-card" aria-hidden="true">
+      <div class="dc-head"><span class="dc-dot"></span><span class="dc-dot"></span><span class="dc-dot"></span><span class="dc-url">qyhhhh.github.io/BleRemoteBrideg/</span></div>
+      <div class="dc-body">
+        <div class="screen"></div>
+        <div class="dc-tabs"><span class="dc-tab"></span><span class="dc-tab"></span><span class="dc-tab"></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main id="main">
+<div class="wrap read">
+
+<p style="margin:6px 0 26px">这份教程分三部分：<b>① 网站解剖</b>——看它到底用了什么技术、怎么组织；<b>② 复刻教程</b>——从零到发布的一步步实操；<b>③ 最佳实践</b>——让页面更快、更稳、更好用的清单。</p>
+
+<section id="part1">
+  <div class="sec-num">Part 1 · 网站解剖</div>
+  <h2>这个网站到底是怎么做出来的</h2>
+  <p class="sec-sub">先看结论：它不是一个「用框架搭出来的大项目」，而是一个<b>精心编排的单文件落地页</b>。整站就是一个 <code>index.html</code>，约 40KB，纯原生 HTML / CSS / JavaScript，没有任何构建工具，托管在免费的 GitHub Pages 上。这种形态特别适合「开源硬件 / 工具 / 产品」的推广页：打开即用、零依赖、免费、易修改。</p>
+
+  <h3>1.1 一句话定位</h3>
+  <p>这是一个<b>产品落地页（landing page）</b>，唯一任务是：让访问者在 30 秒内看懂「这个 ESP32 固件能干什么、为什么值得用、怎么用」，并引导他去「连接设备 / 看怎么用」。</p>
+
+  <h3>1.2 技术栈总览</h3>
+  <table>
+    <caption>表 1 · 站点技术栈与选择理由</caption>
+    <colgroup><col style="width:26%"><col style="width:44%"><col style="width:30%"></colgroup>
+    <thead><tr><th>环节</th><th>实际用法</th><th>为什么这样选</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">托管</td><td>GitHub Pages（用户名 <code>.github.io</code> 仓库子路径）</td><td>免费、静态、稳定、和代码仓库同源</td></tr>
+      <tr><td class="mono">页面形态</td><td>单一 <code>index.html</code>，CSS 与 JS 全部内联</td><td>无构建、无部署步骤，改一个文件即发布</td></tr>
+      <tr><td class="mono">框架</td><td>无（原生 HTML/CSS/JS）</td><td>零依赖，加载快，可被搜索引擎直接读取</td></tr>
+      <tr><td class="mono">样式</td><td>CSS 自定义属性（设计令牌）+ 系统字体栈 + 内联 SVG 图标</td><td>主题一致、无外链字体、图标可随文字变色</td></tr>
+      <tr><td class="mono">交互</td><td>原生 JS：键盘事件、自动播放、状态切换</td><td>只做「演示」，不需要重框架</td></tr>
+      <tr><td class="mono">硬件接入</td><td>ESP Web Tools（基于 Web Serial API）</td><td>浏览器直接烧录固件，用户无需装客户端</td></tr>
+      <tr><td class="mono">持续集成</td><td>GitHub Actions（<code>.github/workflows</code>）</td><td>自动编译固件并部署页面</td></tr>
+    </tbody>
+  </table>
+
+  <h3>1.3 托管与发布链路</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 720 150" role="img" aria-label="发布链路示意图">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#8aa0c8"/></marker>
+      </defs>
+      <g font-family="Consolas,monospace" font-size="13">
+        <rect x="20" y="40" width="150" height="46" rx="9" fill="#ffffff" stroke="#c9d6ea"/>
+        <text x="95" y="59" text-anchor="middle" fill="#2a3446">本地编辑</text>
+        <text x="95" y="76" text-anchor="middle" fill="#5c6b80" font-size="11">index.html / 固件</text>
+        <rect x="20" y="112" width="150" height="30" rx="7" fill="#eef3fc" stroke="#c9d6ea"/>
+        <text x="95" y="131" text-anchor="middle" fill="#24489a" font-size="11">git commit / push</text>
+        <rect x="245" y="40" width="160" height="46" rx="9" fill="#ffffff" stroke="#c9d6ea"/>
+        <text x="325" y="59" text-anchor="middle" fill="#2a3446">GitHub 仓库</text>
+        <text x="325" y="76" text-anchor="middle" fill="#5c6b80" font-size="11">master 分支</text>
+        <rect x="245" y="112" width="160" height="30" rx="7" fill="#eef3fc" stroke="#c9d6ea"/>
+        <text x="325" y="131" text-anchor="middle" fill="#24489a" font-size="11">Actions 自动构建</text>
+        <rect x="485" y="40" width="215" height="46" rx="9" fill="#0f1626"/>
+        <text x="592" y="59" text-anchor="middle" fill="#dbe4f2">GitHub Pages</text>
+        <text x="592" y="76" text-anchor="middle" fill="#8aa0c8" font-size="11">username.github.io/仓库名/</text>
+        <rect x="485" y="112" width="215" height="30" rx="7" fill="#eef3fc" stroke="#c9d6ea"/>
+        <text x="592" y="131" text-anchor="middle" fill="#24489a" font-size="11">全球 CDN · 免费 HTTPS</text>
+      </g>
+      <g stroke="#8aa0c8" stroke-width="1.6" fill="none" marker-end="url(#arr)">
+        <path d="M170 63 H245"/>
+        <path d="M175 127 H245"/>
+        <path d="M405 63 H485"/>
+        <path d="M405 127 H485"/>
+      </g>
+    </svg>
+  </div>
+  <p>整个过程是「写代码 → 推到仓库 → 自动发布」，没有服务器、没有数据库、没有部署命令。对非程序员也友好：<b>更新内容 = 改一个 HTML 文件再 push</b>。</p>
+
+  <h3>1.4 页面区块地图</h3>
+  <p>整页按「<b>认知漏斗</b>」组织——先让人看懂是什么，再演示怎么用，最后给购买 / 使用的入口。这个结构可以直接套用到你自己的产品页上：</p>
+  <ol>
+    <li><b>导航栏（sticky）</b>：吸顶，含 Logo、锚点链接、「连接设备」主按钮。</li>
+    <li><b>Hero 首屏</b>：大标题「10 元改造，让蓝牙遥控器控制电脑」+ 一句话副标题 + 三个能力标签 + 两个按钮。一眼看懂价值。</li>
+    <li><b>实时演示区（DEMO）</b>：页面中心亮点——用 CSS 画出一个遥控器，点它，右侧「电脑屏幕」立即响应。用纯前端模拟真实效果。</li>
+    <li><b>场景区（Scenarios）</b>：刷剧 / Vibe Coding / 演示，三个使用场景卡片，回答「我什么时候用得上」。</li>
+    <li><b>设备界面区</b>：放真实固件配置页的截图 + 交互式逐键识别演示，展示「改键」能力。</li>
+    <li><b>卖点区（Built to be simple）</b>：6 个特性点，回答「为什么选它」。</li>
+    <li><b>兼容性表</b>：一张诚实、带状态标注的兼容矩阵，建立信任。</li>
+    <li><b>上手引导（Get Connected）</b>：三步烧录流程 + 真实「连接设备」按钮（Web Serial）。这是转化动作。</li>
+  </ol>
+
+  <h3>1.5 五个关键实现技术</h3>
+  <div class="cards">
+    <div class="card"><h4>① 设计令牌（CSS 变量）</h4><p>在 <code>:root</code> 定义 <code>--blue</code>、<code>--ink</code>、<code>--bg</code> 等颜色与间距变量。改一处、全局生效，保证整页配色一致。</p></div>
+    <div class="card"><h4>② 内联 SVG 图标</h4><p>图标不用图标库，而是写在 HTML 里的 <code>&lt;svg&gt;</code>，用 <code>stroke:currentColor</code> 让图标自动跟随文字颜色。</p></div>
+    <div class="card"><h4>③ CSS 手绘产品模型</h4><p>遥控器、显示器、PCB 板这些「实物」都用纯 CSS 绘制（渐变、圆角、阴影），不依赖图片，体积小、清晰度无限。</p></div>
+    <div class="card"><h4>④ 原生 JS 交互演示</h4><p>点遥控器 → 触发键盘事件 → 右侧「屏幕」切换画面 + 弹出按键提示。全部是 <code>addEventListener</code>，无框架。</p></div>
+    <div class="card"><h4>⑤ Web Serial 硬件集成</h4><p>页面右上「连接设备」用 ESP Web Tools，通过浏览器 Web Serial API 直接给开发板烧录固件，用户无需安装任何客户端。</p></div>
+    <div class="card"><h4>⑥ 响应式与无障碍</h4><p>用 <code>clamp()</code> 流体字号、<code>grid</code> 自适应列数、媒体查询切换移动端导航；带跳转链接、焦点样式、语义化标签。</p></div>
+  </div>
+
+  <div class="note"><b>关键洞察：</b>这类页面的「技术含量」不在用了多少高级框架，而在于<b>内容编排 + 精确的 CSS + 恰到好处的原生交互</b>。这是零依赖方案能同时兼顾「好看」「够用」「免费托管」「易维护」的原因。</div>
+</section>
+
+<section id="part2">
+  <div class="sec-num">Part 2 · 从零复刻教程</div>
+  <h2>一步一步，做一个你自己的单文件落地页</h2>
+  <p class="sec-sub">下面是完整实操。你不需要会编程——照着粘贴、改文字即可；想深挖时，每步都解释了「为什么这么做」。教程以「给一个开源工具做产品页」为假设，但步骤对任何产品 / 项目通用。</p>
+
+  <div class="toc">
+    <b>本部分目录</b>
+    <ol>
+      <li><a href="#s0">准备：账号与工具</a></li>
+      <li><a href="#s1">建仓库 + 开启 GitHub Pages</a></li>
+      <li><a href="#s2">搭 HTML 骨架</a></li>
+      <li><a href="#s3">建立设计系统（CSS 变量）</a></li>
+      <li><a href="#s4">布局：导航 / Hero / 区块</a></li>
+      <li><a href="#s5">视觉积木：图标 / 产品模型 / 响应式</a></li>
+      <li><a href="#s6">交互：原生 JS 演示</a></li>
+      <li><a href="#s7">进阶：Web Serial 与自动构建</a></li>
+      <li><a href="#s8">发布与验证</a></li>
+    </ol>
+  </div>
+
+  <div class="step" id="s0"><div class="step-n">1</div><div class="step-b">
+    <h3>准备：账号与工具<span class="step-tag">约 5 分钟</span></h3>
+    <p>你需要一个 <b>GitHub 账号</b>（免费注册），以及一个能改文本的工具。推荐：
+    <ul>
+      <li><b>VS Code</b>（免费）：写代码用，自带终端。</li>
+      <li>或者最简方案：直接在 GitHub 网页里编辑文件（见第 1 步），完全不用装任何软件。</li>
+    </ul>
+    </p>
+    <p>本教程假定你用「GitHub 网页编辑 + GitHub Pages 源码分支部署」的最简路径——<b>全程不需要本地装 Git</b>。想用本地 Git 也行，步骤等价。</p>
+  </div></div>
+
+  <div class="step" id="s1"><div class="step-n">2</div><div class="step-b">
+    <h3>建仓库 + 开启 GitHub Pages<span class="step-tag">约 5 分钟</span></h3>
+    <p>目标网站 <code>qyhhhh.github.io/BleRemoteBrideg/</code> 的 URL 结构是「<b>用户名.github.io / 仓库名 /</b>」。所以：</p>
+    <ol>
+      <li>登录 GitHub → 点右上角「+」→ <b>New repository</b>。</li>
+      <li>仓库名填你要的项目名（例如 <code>my-project</code>）。保持 <b>Public</b>（免费托管要求公开）。不要勾选任何初始化文件，或勾选加一个 <code>README</code> 也行。</li>
+      <li>创建后进入仓库 → <b>Settings → Pages</b>。</li>
+      <li>在 <b>Build and deployment</b> 里，<b>Source 选「Deploy from a branch」</b>，Branch 选 <code>master</code>，目录选 <code>/ (root)</code>，Save。</li>
+    </ol>
+    <div class="note ok"><b>结果：</b>现在只要你的 <code>master</code> 分支根目录有一个 <code>index.html</code>，GitHub 就会自动把它发布到 <code>你的用户名.github.io/仓库名/</code>。保存后首次部署约需 1 分钟，之后每次 push 都会自动更新。</div>
+    <div class="note warn"><b>提示：</b>关于分支名——仓库默认可能是 <code>main</code> 而非 <code>master</code>。选 Pages 来源分支时以你仓库实际分支名为准即可，两者等价。</div>
+  </div></div>
+
+  <div class="step" id="s2"><div class="step-n">3</div><div class="step-b">
+    <h3>搭 HTML 骨架<span class="step-tag">核心</span></h3>
+    <p>在仓库根目录新建 <code>index.html</code>（GitHub 网页里点 <b>Add file → Create new file</b>）。骨架如下——<b>所有样式写进 <code>&lt;style&gt;</code>，所有脚本写进 <code>&lt;script&gt;</code></b>，这是单文件方案的关键：</p>
+    <p class="code-cap">index.html — 最小骨架</p>
+    <pre><code>&lt;!doctype html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+  &lt;meta charset="utf-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+  &lt;meta name="color-scheme" content="light"&gt;
+  &lt;title&gt;你的产品名 — 一句话副标题&lt;/title&gt;
+  &lt;meta name="description" content="用一两句话说明这是做什么的，利于搜索展示。"&gt;
+  &lt;!-- 用 data-URI 内联一个 SVG favicon，省去单独文件 --&gt;
+  &lt;link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232f5fc4'/%3E%3C/svg%3E"&gt;
+  &lt;style&gt;
+    /* ===== 全部样式写在这里 ===== */
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;header&gt;...导航...&lt;/header&gt;
+  &lt;main&gt;...页面主体...&lt;/main&gt;
+  &lt;footer&gt;...页脚...&lt;/footer&gt;
+  &lt;script&gt;
+    /* ===== 全部脚本写在这里 ===== */
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+    <p>四个 <code>meta</code> 都很重要：<code>charset</code> 保证中文不乱码；<code>viewport</code> 让手机端正确缩放；<code>color-scheme</code> 告诉浏览器你的明暗模式；<code>description</code> 影响搜索摘要。</p>
+    <div class="note"><b>为什么全部内联？</b>目标站约 40KB 全在一个文件里。好处：① 无需处理文件间路径；② 加载只有一次请求；③ 改一处即发布；④ 复制到任何地方都能离线打开。缺点是单文件会变长——用「分段注释」组织即可：<code>&lt;!-- ===== 视图：Hero ===== --&gt;</code>。</div>
+  </div></div>
+
+  <div class="step" id="s3"><div class="step-n">4</div><div class="step-b">
+    <h3>建立设计系统（CSS 变量）<span class="step-tag">配色统一的关键</span></h3>
+    <p>目标站在 <code>:root</code> 里定义了一整套命名变量。这套「设计令牌」让全站配色、圆角、字体高度一致，且改一处全局生效：</p>
+    <pre><code>:root{
+  /* 基础 */
+  --bg:#f6f7f9;      /* 页面背景 */
+  --paper:#ffffff;   /* 卡片 / 区块背景 */
+  --ink:#252931;     /* 主文字 */
+  --mut:#667487;     /* 次要文字 */
+  --line:#dfe5ed;    /* 分隔线 / 边框 */
+  /* 品牌强调色 */
+  --accent:#1674ed;  /* 主色：按钮、链接、强调 */
+  --accent-dark:#0b55b6;
+  --soft:#edf5ff;    /* 主色浅底：标签、高亮块 */
+  color-scheme:light;
+}</code></pre>
+    <p>选色建议：<b>一个强调色 + 一套中性色（背景 / 文字 / 边框）就够</b>。强调色用于按钮、链接、当前状态；中性色负责绝大部分布局。克制用色反而更显专业。</p>
+    <p>字体用<b>系统字体栈</b>，不加载任何外部字体文件，打开秒快：</p>
+    <pre><code>body{font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",
+  "PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif;}</code></pre>
+    <p>这行让 Windows / macOS / 手机都用各自最舒服的系统字体，中文优先（PingFang、微软雅黑、思源黑体），又无需下载字体文件。</p>
+  </div></div>
+
+  <div class="step" id="s4"><div class="step-n">5</div><div class="step-b">
+    <h3>布局：导航 / Hero / 区块<span class="step-tag">结构</span></h3>
+    <p><b>吸顶导航：</b>用 <code>position:sticky</code> 让它贴住顶部，加一点毛玻璃背景。</p>
+    <pre><code>header{position:sticky;top:0;z-index:25;
+  background:#ffffffed;backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line)}
+.nav{height:70px;display:flex;align-items:center;
+  justify-content:space-between;gap:24px}</code></pre>
+    <p><b>Hero 首屏：</b>用 <code>grid</code> 做左右两栏（左侧文案、右侧演示区），标题用 <code>clamp()</code> 实现随屏幕平滑变化的大小，既在手机不溢出、又在宽屏有气势：</p>
+    <pre><code>.hero{display:grid;grid-template-columns:1fr 1.12fr;
+  gap:42px;align-items:center;padding:48px 0 34px}
+h1{font-size:clamp(42px,4.2vw,59px);font-weight:800;
+  letter-spacing:-2.2px;line-height:1.2}
+/* 大标题里给品牌词上色 */
+h1 em{font-style:normal;color:var(--accent)}</code></pre>
+    <p><b>内容区块：</b>每个章节一个 <code>&lt;section&gt;</code>，内部用「眉标 + 标题 + 说明」的统一头，让整页有清晰节奏。按钮统一用类：</p>
+    <pre><code>.btn{display:inline-flex;align-items:center;gap:9px;
+  min-height:44px;padding:10px 18px;border:1px solid #d5dfeb;
+  background:#fff;border-radius:9px;font-weight:600}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-text{background:none;color:var(--accent);border:0;
+  text-decoration:underline}</code></pre>
+    <div class="note warn"><b>内容编排提醒：</b>别一上来就堆代码。先把你的页面写成「一屏一句」的大纲——首屏说什么、演示什么、三个卖点、一张兼容表、一个行动按钮——把内容定下来，布局只是让内容讲清楚。</div>
+  </div></div>
+
+  <div class="step" id="s5"><div class="step-n">6</div><div class="step-b">
+    <h3>视觉积木：图标 / 产品模型 / 响应式<span class="step-tag">让它好看</span></h3>
+    <h4>内联 SVG 图标</h4>
+    <p>定义统一的 <code>.icon</code> 类，用描边 + <code>currentColor</code>，图标就能自动跟随文字颜色，想换色就换文字色：</p>
+    <pre><code>.icon{width:20px;height:20px;fill:none;
+  stroke:currentColor;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round}
+/* 用法：一行图标 */
+&lt;svg class="icon" viewBox="0 0 24 24"&gt;
+  &lt;path d="M8 10h6v12H8m16-12h-6v12h6M11 16h10"/&gt;
+&lt;/svg&gt;</code></pre>
+    <h4>CSS 手绘产品模型</h4>
+    <p>目标站的遥控器、显示器、PCB 都是 CSS 画的。核心技巧是<b>渐变 + 圆角 + 内阴影 + <code>clip-path</code></b>，用来模拟金属质感、按钮立体感。一个「遥控器按钮」示意：</p>
+    <pre><code>.rb{position:absolute;width:43px;height:43px;border-radius:50%;
+  border:1px solid #101010;
+  background:linear-gradient(135deg,#414242,#202121); /* 深色立体 */
+  box-shadow:inset 0 0 0 1px #ffffff25; /* 内高光 */
+  color:#eee;display:grid;place-items:center}
+/* 悬停 / 按下时亮成品牌色 */
+.rb:hover{filter:brightness(1.18)}
+.rb.pressed,.rb:focus-visible{background:#327ede;
+  box-shadow:0 0 0 3px #327ede40;color:#fff}</code></pre>
+    <div class="note"><b>取舍建议：</b>能用 CSS 画、又需要极清晰（比如设备示意图）的，就用 CSS；而<b>真实截图、实拍图、复杂产品照片</b>应放图片文件（如 <code>assets/</code> 目录），别硬用 CSS 抠。图标、状态点、导航符号用 SVG/CSS；人物、真实产品用真实图片。</div>
+    <h4>响应式</h4>
+    <p>用媒体查询在窄屏切换布局，并隐藏不重要的导航：</p>
+    <pre><code>@media (max-width:860px){
+  .hero{grid-template-columns:1fr}   /* Hero 变单列 */
+  .cards{grid-template-columns:1fr}  /* 卡片堆叠 */
+  .nav-links{display:none}           /* 导航收进菜单 */
+  .menu-toggle{display:flex}
+}</code></pre>
+  </div></div>
+
+  <div class="step" id="s6"><div class="step-n">7</div><div class="step-b">
+    <h3>交互：原生 JS 演示<span class="step-tag">让页面「活」起来</span></h3>
+    <p>目标站最亮眼的是「点遥控器 → 屏幕响应」的实时演示。它本质是：<b>一个点击事件 + 几段状态切换</b>，不需要任何框架。思路如下：</p>
+    <pre><code>&lt;!-- 遥控器上的每个键都是一个带 data 的按钮 --&gt;
+&lt;button class="rb" data-key="ENTER"&gt;OK&lt;/button&gt;
+&lt;button class="rb" data-key="ARROW_LEFT"&gt;←&lt;/button&gt;</code></pre>
+    <pre><code>// 1. 绑定点击：点哪个键
+remote.addEventListener('click', e=&gt;{
+  const key = e.target.closest('.rb');
+  if(!key) return;                    // 点的不是键就忽略
+  const action = key.dataset.key;
+  flash(key);                          // 键亮一下
+  applyAction(action);                 // 让右侧屏幕响应
+  showToast(action);                   // 弹出提示条
+});
+
+// 2. 让右侧「屏幕」响应（这里只是演示，不发真实按键）
+function applyAction(a){
+  if(a==='ENTER')      togglePlay();
+  if(a==='ARROW_LEFT') prevSlide();
+  if(a==='ARROW_RIGHT')nextSlide();
+  // ... 按你的产品逻辑映射
+}</code></pre>
+    <p>还可以加「自动演示」：用 <code>setInterval</code> 定时模拟按几个键，直到用户手动点一下才接管（<code>clearInterval</code>）。「重新开始」则重置状态并重新播放。</p>
+    <div class="note ok"><b>诚实标注：</b>目标站演示区明确写着「浏览器模拟 · 非设备实时数据」。如果你的演示是模拟而非真实，也建议加一行说明，避免误导用户、减少无谓的 bug 反馈。</div>
+  </div></div>
+
+  <div class="step" id="s7"><div class="step-n">8</div><div class="step-b">
+    <h3>进阶：Web Serial 与自动构建<span class="step-tag">可选，按需</span></h3>
+    <h4>（可选）用 ESP Web Tools 在浏览器里烧录固件</h4>
+    <p>目标站右上「连接设备」能在浏览器直接给 ESP32 烧固件。它基于 Chrome/Edge 的 <b>Web Serial API</b>，接入方式是一行自定义元素（需引入其脚本）：</p>
+    <pre><code>&lt;script type="module"
+ src="https://unpkg.com/esp-web-tools@9/dist/web/install-button.js"&gt;&lt;/script&gt;
+
+&lt;esp-web-install-button manifest="./firmware-dist/latest/manifest.json"&gt;
+  &lt;button slot="activate"&gt;连接设备&lt;/button&gt;
+&lt;/esp-web-install-button&gt;</code></pre>
+    <p><code>manifest.json</code> 描述了固件文件与版本；配合 ESP32 的 <code>arduino-cli</code> 编译出 <code>.bin</code> 后放进仓库即可。这样用户<u>无需安装任何客户端</u>就能升级固件。</p>
+    <h4>（可选）用 GitHub Actions 自动构建 + 部署</h4>
+    <p>目标仓库有 <code>.github/workflows</code>，作用类似「每次 push 自动编译固件、再触发 Pages 部署」。一个最小工作流：</p>
+    <pre><code># .github/workflows/deploy.yml
+name: Build &amp; Deploy
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # ……在这里编译你的固件 / 处理产物……
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./   # 把根目录发布为 Pages 内容</code></pre>
+    <p>如果你只是做「纯静态落地页」，其实<b>不需要 Actions</b>——直接在 Pages 设置里选 <code>master</code> 分支的根目录就能发布（见第 2 步）。Actions 是为「需要编译固件」才加。</p>
+  </div></div>
+
+  <div class="step" id="s8"><div class="step-n">9</div><div class="step-b">
+    <h3>发布与验证<span class="step-tag">收尾</span></h3>
+    <ol>
+      <li>在 GitHub 仓库根目录确认有 <code>index.html</code>（以及需要的 <code>assets/</code>、<code>firmware-dist/</code> 等）。</li>
+      <li>提交（Commit changes）。若你启用了 Pages 源码分支部署，稍等约 1 分钟。</li>
+      <li>打开 <code>https://你的用户名.github.io/仓库名/</code>，亲自验证三件事：<b>手机端不溢出</b>、<b>所有按钮都有反馈</b>（没有点了没反应的僵尸按钮）、<b>图片路径正确</b>（不会裂图）。</li>
+      <li>用浏览器的「开发者工具 → 移动端模拟」检查窄屏；用「无障碍 / Lighthouse」跑一遍，看性能与可访问性。</li>
+    </ol>
+    <div class="note ok"><b>验收标准：</b>一个单文件落地页上线 = 首屏能看懂是什么 → 演示区让用户「哦原来这样」→ 兼容表建信任 → 用户点了你的行动按钮。达到这条链路即算成功。</div>
+  </div></div>
+</section>
+
+<section id="part3">
+  <div class="sec-num">Part 3 · 最佳实践</div>
+  <h2>让页面更稳、更快、更好用</h2>
+
+  <h3>3.1 上线前自检清单</h3>
+  <ul class="checklist">
+    <li><b>响应式</b>：手机端单列、无横向溢出；卡片列数每档都不出现「最后一行只剩 1 个」。</li>
+    <li><b>无僵尸按钮</b>：每个看着能点的元素都有真实动作或「演示中」提示。</li>
+    <li><b>图片路径</b>：全部写在 <code>src</code> 或 CSS <code>url()</code> 里，且能在线上打开。</li>
+    <li><b>无障碍</b>：有跳转链接、焦点可见、语义化标签、尊重 <code>prefers-reduced-motion</code>。</li>
+    <li><b>性能</b>：不加载多余字体/库；能 CSS 画的就不用图片；图片用真实尺寸不硬撑。</li>
+    <li><b>诚实标注</b>：演示是模拟还是真实、兼容性是实测还是推断，都写明，别让用户误判。</li>
+  </ul>
+
+  <h3>3.2 常见坑与解法</h3>
+  <table>
+    <caption>表 2 · 高频问题</caption>
+    <colgroup><col style="width:34%"><col style="width:66%"></colgroup>
+    <thead><tr><th>现象</th><th>原因 / 解法</th></tr></thead>
+    <tbody>
+      <tr><td>手机上字太小 / 布局乱</td><td>漏了 <code>viewport</code> meta；Hero 用了固定像素宽。加 <code>viewport</code>，用 <code>grid</code>+媒体查询堆叠。</td></tr>
+      <tr><td>中文乱码</td><td>缺 <code>&lt;meta charset="utf-8"&gt;</code>，或文件不是 UTF-8 保存。</td></tr>
+      <tr><td>图片裂图</td><td>路径写错 / 用了会过期的临时链接。用相对路径 <code>assets/xx.png</code>，图片必须真实存在于仓库。</td></tr>
+      <tr><td>按钮点了没反应</td><td>僵尸按钮：<code>&lt;a href="#"&gt;</code> 无动作、<code>&lt;button&gt;</code> 无监听。要么绑真实行为，要么删掉。</td></tr>
+      <tr><td>页面半天加载不出来</td><td>引了没必要的 JS 库或外链字体。单文件方案默认什么都不引，速度最快。</td></tr>
+      <tr><td>改了文件不生效</td><td>浏览器缓存旧版。强制刷新（Ctrl+F5）；或确认已 push 到正确分支并等部署完成。</td></tr>
+    </tbody>
+  </table>
+
+  <h3>3.3 可直接复制的极简模板</h3>
+  <p>下面是一个最小可用的单文件落地页，复制后填内容即可发布。它已经包含：吸顶导航、Hero、一个卖点区、一个行动按钮、响应式、无障碍跳转、自定义变量。</p>
+  <p class="code-cap">模板.html — 直接替换「你的文字」使用</p>
+  <pre><code>&lt;!doctype html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+&lt;meta charset="utf-8"&gt;
+&lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+&lt;title&gt;你的产品名 — 一句话副标题&lt;/title&gt;
+&lt;meta name="description" content="这里写产品的一句话介绍，用于搜索展示。"/&gt;
+&lt;style&gt;
+:root{--bg:#f6f7f9;--paper:#fff;--ink:#252931;--mut:#667487;
+  --line:#dfe5ed;--accent:#1674ed;--soft:#edf5ff;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:15px/1.7 -apple-system,"PingFang SC","Microsoft YaHei",
+  "Noto Sans CJK SC",sans-serif}
+a{color:var(--accent)}
+.skip{position:fixed;top:-80px;left:12px;background:var(--accent);
+  color:#fff;padding:9px 16px;border-radius:6px;z-index:50}
+.skip:focus{top:12px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 26px}
+header{position:sticky;top:0;background:#ffffffed;
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav{height:66px;display:flex;align-items:center;
+  justify-content:space-between;gap:20px}
+.brand{font-weight:700}
+.nav-links{display:flex;gap:20px}
+.hero{padding:52px 0}
+.hero h1{font-size:clamp(34px,5vw,52px);line-height:1.15;
+  letter-spacing:-1.5px;max-width:640px;margin:0 0 16px}
+.lede{color:var(--mut);max-width:520px;line-height:1.85}
+.btn{display:inline-flex;align-items:center;gap:8px;min-height:44px;
+  padding:10px 18px;border-radius:9px;border:1px solid #d5dfeb;
+  background:#fff;font-weight:600;text-decoration:none;color:var(--ink)}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+section{padding:40px 0;border-top:1px solid var(--line)}
+h2{font-size:26px;margin:0 0 12px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:var(--paper);border:1px solid var(--line);
+  border-radius:12px;padding:18px}
+footer{padding:28px 0 44px;color:var(--mut);font-size:13px}
+@media (max-width:760px){
+  .cards{grid-template-columns:1fr}
+  .nav-links{display:none}
+}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;a class="skip" href="#main"&gt;跳到正文&lt;/a&gt;
+&lt;header&gt;&lt;div class="wrap nav"&gt;
+  &lt;span class="brand"&gt;你的产品名&lt;/span&gt;
+  &lt;nav class="nav-links"&gt;&lt;a href="#"&gt;特性&lt;/a&gt;&lt;a href="#"&gt;兼容性&lt;/a&gt;&lt;/nav&gt;
+&lt;/div&gt;&lt;/header&gt;
+&lt;main id="main"&gt;
+&lt;div class="wrap"&gt;
+  &lt;section class="hero"&gt;
+    &lt;h1&gt;一句话讲清你的产品价值&lt;/h1&gt;
+    &lt;p class="lede"&gt;补充说明它解决什么问题、为什么值得用。控制在两三句内。&lt;/p&gt;
+    &lt;p&gt;&lt;a class="btn btn-primary" href="#"&gt;开始使用&lt;/a&gt;
+       &lt;a class="btn" href="#"&gt;查看说明&lt;/a&gt;&lt;/p&gt;
+  &lt;/section&gt;
+  &lt;section&gt;
+    &lt;h2&gt;三个核心卖点&lt;/h2&gt;
+    &lt;div class="cards"&gt;
+      &lt;div class="card"&gt;&lt;h3&gt;卖点一&lt;/h3&gt;&lt;p&gt;一句话说明。&lt;/p&gt;&lt;/div&gt;
+      &lt;div class="card"&gt;&lt;h3&gt;卖点二&lt;/h3&gt;&lt;p&gt;一句话说明。&lt;/p&gt;&lt;/div&gt;
+      &lt;div class="card"&gt;&lt;h3&gt;卖点三&lt;/h3&gt;&lt;p&gt;一句话说明。&lt;/p&gt;&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/section&gt;
+&lt;/div&gt;&lt;/main&gt;
+&lt;footer&gt;&lt;div class="wrap"&gt;© 你的名字 · 开源项目&lt;/div&gt;&lt;/footer&gt;
+&lt;/body&gt;&lt;/html&gt;</code></pre>
+
+  <div class="note ok"><b>最后提醒：</b>「这类网站」的核心价值不在炫技，而在<b>把「这东西是什么、为什么用它、怎么开始」用一屏讲清楚</b>。技术上保持单文件、零依赖、免费托管——这套组合让你低成本上线、后续改一个文件就能持续迭代。动手做，从复制上面模板开始。</div>
+</section>
+
+</div>
+</main>
+<footer>
+  <div class="wrap">
+    <span>单文件落地页网站制作教程 · 以 BleRemoteBrideg 为例</span>
+    <span>参考源：https://qyhhhh.github.io/BleRemoteBrideg/（GPL-3.0）</span>
+  </div>
+</footer>
+</body>
+</html>
